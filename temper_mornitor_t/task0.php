@@ -54,9 +54,9 @@ while(1)
 	$result = thingspeak_write("field1=".(string)$temp);
 	
 	if($result > 0)
-		echo "write succesfully\r\n";
+		echo "Write succesfully\r\n";
 	else
-		echo "write unsuccesfully\r\n";
+		echo "Write unsuccesfully\r\n";
 
 	sleep((int) $interval);
 }	

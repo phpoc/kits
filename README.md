@@ -1,17 +1,17 @@
-## Pre-Programmed PHPoC Solution
+## Pre-Programmed PHPoC Solutions
 PHPoC source codes for PHPoC Kits
 
 ## Network Temperature Monitoring Kit (Basic)
-* temper_mornitor (v1.0.0)
+* temper_mornitor (v2.0.0)
 * [How to Use (PHPoC Black)] (http://blog.naver.com/eztcpcom/220801962824)
 * [How to Use (PHPoC Blue)] (http://blog.naver.com/eztcpcom/220805400660)
 
 ## Network Temperature Monitoring Kit (ThingSpeak)
-* temper_mornitor_t (v1.0.0)
+* temper_mornitor_t (v2.0.0)
 * [How to Use] (http://blog.naver.com/eztcpcom/220862196709)
 
 ## Smart Control Kit
-* smart_control (v1.0.0)
+* smart_control (v2.0.0)
 * [How to Use (PHPoC Black)] (http://blog.naver.com/eztcpcom/220890655188)
 * [How to Use (PHPoC Blue)] (http://blog.naver.com/eztcpcom/220891239453)
 
