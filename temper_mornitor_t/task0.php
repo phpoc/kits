@@ -2,7 +2,7 @@
 include_once "/lib/sd_340.php";
 include_once "config.php";
 include_once "/lib/sc_envu.php";
-include_once "/lib/vd_thingspeak.php";
+include_once "/lib/sn_thingspeak_b1.php";
 
 $envu = envu_read("nm0", NM0_ENVU_SIZE, NM0_ENVU_OFFSET);
 
@@ -12,8 +12,8 @@ if(!($write_api_key = envu_find($envu, "write_api_key")))
 	$write_api_key = "";
 if(!($interval = envu_find($envu, "interval")))
 	$interval = "15";
-
-thingspeak_setup(0, $channel_id, $write_api_key);
+	
+thingspeak_channel($channel_id, $write_api_key);
 
 $email_address = "";
 
@@ -51,13 +51,13 @@ while(1)
 	$temp = round($total_tmp / 100, 1);
  	echo "Temperature: $temp 'C\r\n";
 
-	$result = thingspeak_write("field1=".(string)$temp);
-	
-	if($result > 0)
+	thingspeak_update("field1=".(string)$temp);
+		
+	if(thingspeak_status() == 200)
 		echo "Write succesfully\r\n";
 	else
 		echo "Write unsuccesfully\r\n";
-
+	
 	sleep((int) $interval);
 }	
 	

@@ -2,8 +2,6 @@
  
 if(_SERVER("REQUEST_METHOD"))
     exit; // avoid php execution via http request
- 
-include_once "/lib/sd_340.php";
 
 define("BASIC_CLOCK",   42000000); // basic clock of PHPoC 42MHz
 

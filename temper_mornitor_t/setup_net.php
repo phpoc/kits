@@ -59,6 +59,7 @@ $ip6nsaddr  = inet_ntop(substr(envs_find($envs, ENV_CODE_IP6, 0x03), 0, 16));
 $ssid_env       = envs_find($envs, ENV_CODE_WLAN, 0x01);
 $ssid_pos 		= strpos($ssid_env, int2bin(0x00, 1));
 $ssid		 	= substr($ssid_env, 0, (int)$ssid_pos);
+$ssid_raw	 	= bin2hex($ssid);
 
 $shared_key_env = envs_find($envs, ENV_CODE_WLAN, 0x08);	
 $shared_key_pos = strpos($shared_key_env, int2bin(0x00, 1));
@@ -561,6 +562,7 @@ $shared_key		= substr($shared_key_env, 0, (int)$shared_key_pos);
 				<td class="theader">SSID</td>	
 				<td>
 					<input type="text" class="formtext" name="ssid" size="15" maxlength="31" value="<? echo $ssid ?>">
+					<input type="hidden" name="ssid_raw" size="15" maxlength="31" value="<? echo $ssid_raw ?>">
 					<button type="button" name="ap_search" onclick="search_ap();">Search</button>
 				</td>
 			</tr>

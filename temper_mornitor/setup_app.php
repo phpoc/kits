@@ -254,7 +254,7 @@ if(!($interval = envu_find($envu, "interval")))
 		</table>
 		
 		<hr size="2" noshade>
-		<h1>Mornitoring</h1>
+		<h1>Monitoring</h1>
 		
 		<table>
 			<tr>

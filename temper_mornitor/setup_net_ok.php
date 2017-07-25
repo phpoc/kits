@@ -40,13 +40,21 @@ $net_opt_wpa  = (int) _POST("eap_type");
 $net_opt_wlan = (int) _POST("wlan_opt");  // Enable 1 - Disbale 0
 $ip_type      = (int) _POST("ip_type");
 $ip6_opt      = (int) _POST("ip6_opt");   // Enable 1 - Disbale 0 (IPv6)
-$ssid         = _POST("ssid");
 $shared_key   = _POST("shared_key");
+$ssid   	  = hex2bin(_POST("ssid_raw"));
+$ssid   	  = bin2hex(_POST("ssid"));
+$ssid_raw     = _POST("ssid_raw");
+
+if ( $ssid != $ssid_raw )
+	$ssid    = hex2bin($ssid);
+else
+	$ssid    = hex2bin($ssid_raw);
 
 $envs = envs_read();
 
 if($ip_type == 0)
-{	// Static IP Address
+{	
+	// Static IP Address
 	envs_set_net_opt($envs, NET_OPT_DHCP, 0);
 	envs_set_net_opt($envs, NET_OPT_AUTO_NS, 0);
 
@@ -61,15 +69,17 @@ if($ip_type == 0)
 	envs_update($envs, ENV_CODE_IP4, 0x03, inet_pton($nsaddr));
 }
 else
-{ // DHCP
+{ 
+	// DHCP
 	envs_set_net_opt($envs, NET_OPT_DHCP, 1);
 	envs_set_net_opt($envs, NET_OPT_AUTO_NS, 1);
 }	
 
-//WLAN	
+// WLAN	
 envs_set_net_opt($envs, NET_OPT_WLAN, $net_opt_wlan);
 
-if($net_opt_wlan == 1) // wlan enabled
+// wlan enabled
+if($net_opt_wlan == 1) 
 {		
 	if($ssid != rtrim(envs_find($envs, ENV_CODE_WLAN, 0x01)))
 		$comp_psk = true;
@@ -99,7 +109,6 @@ if($net_opt_wlan == 1) // wlan enabled
 }
 
 //IPv6
-
 envs_set_net_opt($envs, NET_OPT_IP6, $ip6_opt);
 
 if($ip6_opt == 1)
@@ -115,7 +124,8 @@ if($ip6_opt == 1)
 	envs_set_net_opt($envs, NET_OPT_IP6_EUI, $ip6_eui);
 	envs_set_net_opt($envs, NET_OPT_IP6_GUA, $ip6_type);
 	
-	if ($ip6_type == 1) // Static IPv6 address
+	// Static IPv6 address
+	if ($ip6_type == 1) 
 	{	
 		envs_update($envs, ENV_CODE_IP6, 0x00, inet_pton($ip6addr) . int2bin($ip6prefix, 2));
 		envs_update($envs, ENV_CODE_IP6, 0x02, inet_pton($ip6gwaddr));
@@ -139,7 +149,6 @@ if($ip_type != 1)
 	echo "<a href=setup_info.php>Home</a>&nbsp;&nbsp;<br>\r\n";
 	
 system("reboot sys 1000");
-
 
 ?>
 </center>

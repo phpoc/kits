@@ -1,6 +1,6 @@
 <?php
 
-// $psp_id sd_340.php date 20160308
+// $psp_id sd_340.php date 20170314
 // P4S-340/342 basic library
 
 define("LOW",    0);
@@ -226,6 +226,9 @@ function uart_setup($uart_id, $baud, $set = "N81N")
 		case "S": /* S/W flow control */
 			$flowctrl = 2;
 			break;
+		case "T": /* TxDE flow control */
+			$flowctrl = 3;
+			break;
 		default:
 			exit("uart_setup: invalid flow control $flowctrl\r\n");
 			break;
@@ -306,6 +309,20 @@ function uart_txfree($uart_id)
 	$pid = pid_open_nodie("/mmap/uart$uart_id", "uart_txfree");
 
 	$retval = pid_ioctl($pid, "get txfree");
+
+	pid_close($pid);
+
+	return $retval;
+}
+
+function spi_ioctl($spi_id, $cmd)
+{
+	if($spi_id != 0)
+		exit("spi_ioctl: spi_id out of range $spi_id\r\n");
+
+	$pid = pid_open_nodie("/mmap/spi$spi_id", "spi_ioctl");
+
+	$retval = pid_ioctl($pid, $cmd);
 
 	pid_close($pid);
 
@@ -437,10 +454,12 @@ function spi_write_read($spi_id, $wbuf, &$rbuf, $rlen)
 
 	pid_read($pid, $rbuf, $wlen); // drop loop-back data
 
-	if(pid_read($pid, $rbuf) != $rlen)
-		exit("spi_write_read: read length mismatch\r\n");
+	$retval = pid_read($pid, $rbuf);
 
 	pid_close($pid);
+
+	if($retval != $rlen)
+		exit("spi_write_read: read length mismatch $retval $rlen\r\n");
 
 	return $retval;
 }
@@ -474,16 +493,16 @@ function i2c_setup($i2c_id, $saddr, $mode = "sm")
 	pid_close($pid);
 }
 
-function i2c_scan($i2c_id, $rw_bit = 1)
+function i2c_scan($i2c_id, $rw_bit = 1, $len = 0)
 {
 	if($i2c_id != 0)
-		exit("i2c_setup: i2c_id out of range $i2c_id\r\n");
+		exit("i2c_scan: i2c_id out of range $i2c_id\r\n");
 
-	$pid = pid_open_nodie("/mmap/i2c$i2c_id", "i2c_setup");
+	$pid = pid_open_nodie("/mmap/i2c$i2c_id", "i2c_scan");
 
 	pid_ioctl($pid, "req reset");
 
-	echo "i2c_scan found : ";
+	echo "i2c_scan: ";
 
 	$found = 0;
 
@@ -494,9 +513,17 @@ function i2c_scan($i2c_id, $rw_bit = 1)
 		pid_ioctl($pid, "set saddr $hex_addr");
 
 		if($rw_bit)
-			pid_ioctl($pid, "req read 0");
+		{
+		 	// WARNING : some slave devices hold SDA if zero length read requested
+			pid_ioctl($pid, "req read $len");
+		}
 		else
+		{
+			if($len)
+				pid_write($pid, str_repeat("\x00", $len), $len);
+
 			pid_ioctl($pid, "req write");
+		}
 
 		while(pid_ioctl($pid, "get state"))
 			;

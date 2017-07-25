@@ -1,8 +1,5 @@
 <?php
 
-include_once "/lib/sd_340.php";
-include_once "/lib/sn_tcp_ws.php";
-
 // camera command
 define("CAM_CMD_PREFIX",      0xAA);
 define("CAM_CMD_SYNC",        0x0D);
@@ -128,11 +125,11 @@ function camera_wait_for_ACK($time_out, $command)
 			&& bin2int($resp, 1, 1) == (CAM_CMD_ACK ) 
 			&& bin2int($resp, 2, 1) == $command )
 		{
-			echo "camera: received ACK\r\n";
+			//echo "camera: received ACK\r\n";
 			return true;
 		}
 	}
-	echo "camera: not receive ACK\r\n";
+	//echo "camera: not receive ACK\r\n";
 	return false;
 }
 
@@ -154,14 +151,17 @@ function camera_sync()
 		
 		$retry_cnt++;
 		
-		if($retry_cnt > 100)
-			system("reboot php 100");
+		if($retry_cnt > 20)
+			return false;
+			//system("reboot php 100");
 		
 		usleep(10000);
 	}  
 	$cmd[1] = CAM_CMD_ACK ;
 	$cmd[2] = CAM_CMD_SYNC;
 	send_cmd($cmd, 6); 
+	
+	return true;
 }
 
 function camera_setup($color_type, $preview_resolution, $jpeg_resolution)
@@ -172,7 +172,7 @@ function camera_setup($color_type, $preview_resolution, $jpeg_resolution)
 	$resp = "";
 	
 	$retry_cnt = 0;
-  
+	
 	while (1)
 	{
 		clear_rx_buf();
@@ -183,11 +183,12 @@ function camera_setup($color_type, $preview_resolution, $jpeg_resolution)
 		
 		$retry_cnt++;
 		
-		if($retry_cnt > 100)
-			system("reboot php 100");
+		if($retry_cnt > 20)
+			return false;
+			//system("reboot php 100");
 	}
 	// set packet size
-	echo "camera: set CAM_CMD_PACKAGESIZE\r\n";
+	//echo "camera: set CAM_CMD_PACKAGESIZE\r\n";
 	$cmd = array( CAM_CMD_PREFIX, CAM_CMD_PACKAGESIZE , 0x08, PIC_PKT_LEN & 0xff, (PIC_PKT_LEN>>8) & 0xff ,0); 
 	
 	$retry_cnt = 0;
@@ -202,9 +203,12 @@ function camera_setup($color_type, $preview_resolution, $jpeg_resolution)
 		
 		$retry_cnt++;
 		
-		if($retry_cnt > 100)
-			system("reboot php 100");
+		if($retry_cnt > 20)
+			return false;
+			//system("reboot php 100");
 	}
+	
+	return true;
 }
 
 function camera_reset($reset = 0x01)
@@ -225,7 +229,7 @@ function camera_reset($reset = 0x01)
 		
 		$retry_cnt++;
 		
-		if($retry_cnt > 100)
+		if($retry_cnt > 20)
 			system("reboot php 100");
 	}
 }
@@ -233,7 +237,7 @@ function camera_reset($reset = 0x01)
 function camera_capture()
 {	
 	//snapshot. 
-	echo "camera: CAM_CMD_SNAPSHOT...\r\n";
+	//echo "camera: CAM_CMD_SNAPSHOT...\r\n";
 	$cmd = array( CAM_CMD_PREFIX, CAM_CMD_SNAPSHOT , 0x00, 0x00, 0x00 ,0x00); 
 	$resp = "";
 	
@@ -249,7 +253,7 @@ function camera_capture()
 		
 		$retry_cnt++;
 		
-		if($retry_cnt > 100)
+		if($retry_cnt > 20)
 			system("reboot php 100");
 	}
 }
@@ -257,7 +261,7 @@ function camera_capture()
 function camera_get_picture($ws_modes)
 {	
 	// send get picture command and get total size
-	echo "camera: get CAM_CMD_GETPICTURE...\r\n";
+	//echo "camera: get CAM_CMD_GETPICTURE...\r\n";
 	$cmd = array( CAM_CMD_PREFIX, CAM_CMD_GETPICTURE , 0x01, 0x00, 0x00 ,0x00); 
 	$resp = "";
 	$retry_cnt = 0;
@@ -268,8 +272,9 @@ function camera_get_picture($ws_modes)
 		$retry_cnt++;
 		send_cmd($cmd, 6);
 		
-		if($retry_cnt > 100)
-			system("reboot php 100");
+		if($retry_cnt > 5)
+			return false;
+			//system("reboot php 100");
 		
 		if (camera_wait_for_ACK(100, CAM_CMD_GETPICTURE))
 		{
@@ -282,7 +287,7 @@ function camera_get_picture($ws_modes)
 				&& bin2int($resp, 2, 1) == 0x01)
 			{
 				$pic_total_len = (bin2int($resp, 3, 1)) | (bin2int($resp, 4, 1) << 8) | (bin2int($resp, 5, 1) << 16); 
-				echo "\r\npic_total_len: ", $pic_total_len, "\r\n";
+				//echo "\r\npic_total_len: ", $pic_total_len, "\r\n";
 				break;
 			}
 		}
@@ -358,8 +363,9 @@ function camera_get_picture($ws_modes)
 				}
 			}
 			
-			if($retry_cnt > 100)
-				system("reboot php 100");
+			if($retry_cnt > 5)
+				return false;
+				//system("reboot php 100");
 		} 
 		
 		if($retry) break; 
@@ -376,7 +382,8 @@ function camera_get_picture($ws_modes)
 	
 	// send finish code to websocket client
 	$wbuf = '{"cmd":' . sprintf("%d", _CMD_CAMERA_DATA_STOP, 1) . '}';
-	ws_send($ws_modes, $wbuf);	
+	ws_send($ws_modes, $wbuf);
+	
+	return true;
 }
 ?>
-
